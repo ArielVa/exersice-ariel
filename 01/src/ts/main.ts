@@ -1,31 +1,37 @@
-import { Calculator } from "./calculator";
+import {Game} from "./game";
+import {View} from "./view";
+import {View2} from "./view2";
 
-console.log('Hello World');
 
-const btn = document.getElementById('button-ok') as HTMLButtonElement;
 
-if (btn) {
-    btn.addEventListener('click', ev => {
-        const inp = document.getElementById('input-name') as HTMLInputElement;
-        const name = inp.value;
+const game = new Game();
+console.log(game)
+// const view = new View(game);
 
-        const span = document.getElementById('span-name') as HTMLSpanElement;
-        span.innerText = name;
-    });
-}
+const  view2 = new View2(game.addGuess);
 
-const btn2 = document.getElementById('button-equals') as HTMLButtonElement;
-if (btn2) {
-    btn2.addEventListener('click', ev => {
-        const a = document.getElementById('a') as HTMLInputElement;
-        const b = document.getElementById('b') as HTMLInputElement;
-        const span = document.getElementById('span-result') as HTMLSpanElement;
-        const aValue = a.valueAsNumber;
-        const bValue = b.valueAsNumber;
 
-        const calc = new Calculator();
-        const res = calc.add(aValue, bValue);
+// const input =  document.getElementById("input-guess") as HTMLInputElement;
+//
+// const btnOK = document.getElementById("button-ok") as HTMLButtonElement;
+//
+// // this.btnOK.addEventListener('click', this.guess.bind(this, this.inputGuess.value));
+// // this.btnOK.addEventListener('click', this.onBtnClickedCb.bind(this, this.inputGuess.value))
+// btnOK.addEventListener('click', () => {
+// 	if(!game.isGameOver()) {
+// 		game.addGuess(input.value)
+// 		if(game.hasPlayerWon()) {
+// 			console.log("Player Won")
+// 		}
+// 	} else {
+//
+// 		console.log("Game Over")
+// 	}
+// 	console.log(game)
+// });
 
-        span.innerText = res.toString();
-    });
-}
+
+
+
+
+

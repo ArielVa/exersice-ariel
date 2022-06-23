@@ -18,20 +18,14 @@ export class Game {
 		}
 	}
 
-	addGuess(word: string): boolean {
-		// TODO add logic in View in case inserting a short word
-		// TODO check legal words?
-		console.log("in guess logic")
-
-		if(word.length !== this.WORD_LENGTH) return false;
-
+	addGuess(word: string): void {
 		if(word === this.wordToGuess) {
 			for(let i=0; i<word.length; i++) {
 				this.cells[(this.currentRow * this.WORD_LENGTH) + i] = new Cell(word[i], CellStatus.EXACT);
 			}
 		} else {
 			for(let i=0; i<word.length; i++) {
-				let cellStatusToAdd: CellStatus = CellStatus.EMPTY;
+				let cellStatusToAdd: CellStatus = CellStatus.WRONG;
 				for(let j=0; j<this.wordToGuess.length; j++) {
 					if(word[i] === this.wordToGuess[j]) {
 						cellStatusToAdd = i === j ?  CellStatus.EXACT : cellStatusToAdd = CellStatus.EXISTS;
@@ -41,12 +35,14 @@ export class Game {
 			}
 		}
 		this.currentRow++;
-		return true;
 	}
 
 	reset() {
 		this.currentRow = 0;
-		this.cells = [];
+		this.cells.forEach(cell => {
+			cell.CellStatus = CellStatus.EMPTY;
+			cell.CellContent = '';
+		})
 		this.wordToGuess = WORDS[Math.floor(Math.random() * WORDS.length)];
 	}
 

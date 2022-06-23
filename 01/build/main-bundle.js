@@ -39,6 +39,9 @@ var Cell = /** @class */ (function () {
         get: function () {
             return this.content;
         },
+        set: function (str) {
+            this.content = str;
+        },
         enumerable: false,
         configurable: true
     });
@@ -72,11 +75,6 @@ var Game = /** @class */ (function () {
         }
     }
     Game.prototype.addGuess = function (word) {
-        // TODO add logic in View in case inserting a short word
-        // TODO check legal words?
-        console.log("in guess logic");
-        if (word.length !== this.WORD_LENGTH)
-            return false;
         if (word === this.wordToGuess) {
             for (var i = 0; i < word.length; i++) {
                 this.cells[(this.currentRow * this.WORD_LENGTH) + i] = new cell_1.Cell(word[i], cell_1.CellStatus.EXACT);
@@ -84,7 +82,7 @@ var Game = /** @class */ (function () {
         }
         else {
             for (var i = 0; i < word.length; i++) {
-                var cellStatusToAdd = cell_1.CellStatus.EMPTY;
+                var cellStatusToAdd = cell_1.CellStatus.WRONG;
                 for (var j = 0; j < this.wordToGuess.length; j++) {
                     if (word[i] === this.wordToGuess[j]) {
                         cellStatusToAdd = i === j ? cell_1.CellStatus.EXACT : cellStatusToAdd = cell_1.CellStatus.EXISTS;
@@ -94,11 +92,13 @@ var Game = /** @class */ (function () {
             }
         }
         this.currentRow++;
-        return true;
     };
     Game.prototype.reset = function () {
         this.currentRow = 0;
-        this.cells = [];
+        this.cells.forEach(function (cell) {
+            cell.CellStatus = cell_1.CellStatus.EMPTY;
+            cell.CellContent = '';
+        });
         this.wordToGuess = words_1.WORDS[Math.floor(Math.random() * words_1.WORDS.length)];
     };
     Game.prototype.isGameOver = function () {
@@ -150,17 +150,20 @@ exports.Game = Game;
 
 /***/ }),
 
-/***/ "./src/ts/view2.ts":
-/*!*************************!*\
-  !*** ./src/ts/view2.ts ***!
-  \*************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ "./src/ts/view.ts":
+/*!************************!*\
+  !*** ./src/ts/view.ts ***!
+  \************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.View2 = void 0;
-var View2 = /** @class */ (function () {
-    function View2(cbf) {
+exports.View = void 0;
+var cell_1 = __webpack_require__(/*! ./cell */ "./src/ts/cell.ts");
+var View = /** @class */ (function () {
+    function View(game) {
+        var _this = this;
+        this.game = game;
         this.inputGuessCells = [];
         this.inputGuess = document.getElementById("input-guess");
         for (var i = 1; i < 7; i++) {
@@ -169,32 +172,72 @@ var View2 = /** @class */ (function () {
             }
         }
         this.btnOK = document.getElementById("button-ok");
-        this.btnOK.addEventListener('click', cbf.bind(this, this.inputGuess.value));
+        this.btnReset = document.getElementById("button-reset");
+        this.gameOverText = document.getElementById("game-over");
+        this.gameOverStatus = document.getElementById("game-over-status");
+        this.btnOK.addEventListener('click', function () {
+            if (!_this.game.isGameOver()) {
+                _this.game.addGuess(_this.inputGuess.value);
+                _this.renderGame(game);
+                if (_this.game.isGameOver()) {
+                    _this.gameOverText.style.display = "inherit";
+                    _this.btnReset.style.display = "inherit";
+                    _this.gameOverStatus.innerText = _this.game.hasPlayerWon() ? "YOU WON" : "YOU LOST";
+                }
+            }
+        });
+        this.btnReset.addEventListener('click', function () {
+            _this.game.reset();
+            _this.gameOverText.style.display = "none";
+            _this.btnReset.style.display = "none";
+            _this.renderGame(game);
+            console.log(_this.game);
+        });
     }
-    View2.prototype.renderGame = function (game) {
-        var start = (game.NumOfFilledRows - 1) * game.WordLength;
-        var end = start + game.WordLength;
-        console.log(start, end);
-        for (var i = start; i < end; i++) {
-            var cellStatus = game.Cells[i].CellContent;
+    View.prototype.renderGame = function (game) {
+        // TODO - Render one specific row of entire game?
+        // const start = (game.NumOfFilledRows - 1) * game.WordLength;
+        // const end = start + game.WordLength;
+        // console.log(start, end)
+        // for (let i=start; i<end; i++) {
+        // 	const cellStatus = game.Cells[i].CellStatus;
+        // 	this.inputGuessCells[i].value = game.Cells[i].CellContent;
+        // 	switch (cellStatus) {
+        // 		case CellStatus.WRONG:
+        // 			this.inputGuessCells[i].style.color = "#ff0707"
+        // 			break;
+        // 		case CellStatus.EXISTS:
+        // 			this.inputGuessCells[i].style.color = "#0ea0f1"
+        // 			break;
+        // 		case CellStatus.EXACT:
+        // 			this.inputGuessCells[i].style.color = "#28c913"
+        // 			break;
+        // 		default:
+        // 			break;
+        // 	}
+        //
+        // }
+        for (var i = 0; i < this.inputGuessCells.length; i++) {
+            var cellStatus = game.Cells[i].CellStatus;
             this.inputGuessCells[i].value = game.Cells[i].CellContent;
             switch (cellStatus) {
+                case cell_1.CellStatus.WRONG:
+                    this.inputGuessCells[i].style.color = "#ff0707";
+                    break;
+                case cell_1.CellStatus.EXISTS:
+                    this.inputGuessCells[i].style.color = "#0ea0f1";
+                    break;
+                case cell_1.CellStatus.EXACT:
+                    this.inputGuessCells[i].style.color = "#28c913";
+                    break;
+                default:
+                    break;
             }
         }
-        // if(!game.isGameOver()) {
-        // 	game.addGuess(input.value)
-        // 	if(game.hasPlayerWon()) {
-        // 		console.log("Player Won")
-        // 	}
-        // } else {
-        //
-        // 	console.log("Game Over")
-        // }
-        // console.log(game)
     };
-    return View2;
+    return View;
 }());
-exports.View2 = View2;
+exports.View = View;
 
 
 /***/ }),
@@ -6008,29 +6051,10 @@ var exports = __webpack_exports__;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 var game_1 = __webpack_require__(/*! ./game */ "./src/ts/game.ts");
-var view2_1 = __webpack_require__(/*! ./view2 */ "./src/ts/view2.ts");
+var view_1 = __webpack_require__(/*! ./view */ "./src/ts/view.ts");
 var game = new game_1.Game();
 console.log(game);
-// const view = new View(game);
-var view2 = new view2_1.View2(game.addGuess);
-// const input =  document.getElementById("input-guess") as HTMLInputElement;
-//
-// const btnOK = document.getElementById("button-ok") as HTMLButtonElement;
-//
-// // this.btnOK.addEventListener('click', this.guess.bind(this, this.inputGuess.value));
-// // this.btnOK.addEventListener('click', this.onBtnClickedCb.bind(this, this.inputGuess.value))
-// btnOK.addEventListener('click', () => {
-// 	if(!game.isGameOver()) {
-// 		game.addGuess(input.value)
-// 		if(game.hasPlayerWon()) {
-// 			console.log("Player Won")
-// 		}
-// 	} else {
-//
-// 		console.log("Game Over")
-// 	}
-// 	console.log(game)
-// });
+var view = new view_1.View(game);
 
 })();
 
